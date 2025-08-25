@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কুরআনের ব্যাকরণ কোর্স - Interactive Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📖 পবিত্র কুরআনের ব্যাকরণ শিক্ষা কোর্স</h1>
+        
+        <div class="main-content">
+            <div class="video-section">
+                <iframe id="videoFrame" class="video-frame" 
+                        src="https://www.youtube.com/embed?list=PLKX6RwLbgFxJnQXsUj2ZA5-_FGFQp9tOE&index=1" 
+                        allowfullscreen>
+                </iframe>
+                
+                <div class="video-controls">
+                    <div class="nav-buttons">
+                        <button onclick="previousLesson()" id="prevBtn">⏮️ Previous</button>
+                        <button onclick="nextLesson()" id="nextBtn">Next ⏭️</button>
+                    </div>
+                    <div class="nav-buttons">
+                        <button onclick="toggleTheaterMode()" id="theaterBtn" class="theater-btn">🎭 Theater Mode</button>
+                        <button onclick="toggleAutoPlay()" id="autoPlayBtn">🔄 Auto Play</button>
+                        <button onclick="resetCourse()">🔄 Reset Course</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="course-progress">
+                    <div class="course-title">
+                        📊 কোর্স অগ্রগতি
+                        <div class="milestone-badge" id="milestoneBadge">🎉 Milestone!</div>
+                    </div>
+                    
+                    <div class="completion-circle">
+                        <svg>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#4ecdc4"/>
+                                    <stop offset="100%" style="stop-color:#44a08d"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="background" cx="70" cy="70" r="60"/>
+                            <circle class="progress-ring" id="progressRing" cx="70" cy="70" r="60"/>
+                        </svg>
+                        <div class="completion-text" id="completionText">4%</div>
+                    </div>
+                    
+                    <div class="progress-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="completedCount">0</span>
+                            <div class="stat-label">সম্পূর্ণ</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="remainingCount">26</span>
+                            <div class="stat-label">বাকি</div>
+                        </div>
+                    </div>
+                    
+                    <div class="completion-message" id="completionMessage">
+                        🎓 অভিনন্দন! কোর্স সম্পন্ন হয়েছে! 🎉
+                    </div>
+                </div>
+
+                <div class="lesson-info">
+                    <div class="lesson-number" id="lessonNumber">পাঠ ১ / ২৬</div>
+                    <div class="lesson-title" id="lessonTitle">কুরআনের ব্যাকরণ শিক্ষার ভূমিকা</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
