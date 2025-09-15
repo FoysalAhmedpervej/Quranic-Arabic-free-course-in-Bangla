@@ -531,7 +531,7 @@ function showTimeBadgeCelebration(badge) {
     elements.timeBadgeModal.classList.remove('hidden');
     setTimeout(() => {
         elements.timeBadgeModal.classList.add('hidden');
-    }, 3000);
+    }, 2000); // Changed from 3000 to 2000 milliseconds (2 seconds)
 }
 
 // Event listeners
