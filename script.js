@@ -25,7 +25,9 @@ let appState = {
     sessionStartTime: null,
     isTracking: false,
     focusMode: false,
-    earnedTimeBadges: new Set()
+    earnedTimeBadges: new Set(),
+    latestBadge: null,
+    showLatestBadge: false
 };
 
 // DOM elements - Fixed with proper initialization
