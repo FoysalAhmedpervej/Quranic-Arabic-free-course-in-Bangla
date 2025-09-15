@@ -227,7 +227,6 @@ function checkForTimeBadges() {
         if (totalHours >= badge.hours && !appState.earnedTimeBadges.has(badge.hours)) {
             appState.earnedTimeBadges.add(badge.hours);
             saveTimeData();
-            showTimeBadgeCelebration(badge);
             updateTimeBadgesDisplay();
         }
     });
@@ -266,18 +265,6 @@ function updateTimerDisplay() {
 
 function updateTimeBadgesDisplay() {
     if (!elements.timeBadges) return;
-    
-    const earnedBadges = timeBadges.filter(badge => appState.earnedTimeBadges.has(badge.hours));
-    
-    elements.timeBadges.innerHTML = earnedBadges.map(badge => `
-        <div class="flex flex-col items-center bg-white/10 rounded-xl p-4 shadow-lg text-center ${badge.color}">
-            <svg class="w-8 h-8 mb-2 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                ${icons[badge.icon]}
-            </svg>
-            <h4 class="font-semibold text-sm">${badge.name}</h4>
-            <p class="text-white/90 text-xs">${badge.hours}h</p>
-        </div>
-    `).join('');
 }
 
 // Progress functions
