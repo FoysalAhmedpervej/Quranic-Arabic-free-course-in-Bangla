@@ -317,7 +317,7 @@ function toggleFocusMode() {
 
 function updateFocusMode() {
     if (appState.focusMode) {
-        if (elements.mainContainer) elements.mainContainer.classList.add('focus-mode');
+        if (elements.mainContainer) elements.mainContainer.classList.add('Theater-mode');
         if (elements.header) elements.header.style.display = 'none';
         if (elements.contentGrid) {
             elements.contentGrid.style.gridTemplateColumns = '1fr';
@@ -330,12 +330,12 @@ function updateFocusMode() {
             elements.focusIndicator.style.display = 'flex';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eye;
-        if (elements.focusText) elements.focusText.textContent = 'Focus Mode ON';
+        if (elements.focusText) elements.focusText.textContent = 'Theater Mode ON';
         if (elements.focusToggle) {
             elements.focusToggle.className = elements.focusToggle.className.replace('from-slate-700 to-slate-600', 'from-cyan-500 to-blue-500');
         }
     } else {
-        if (elements.mainContainer) elements.mainContainer.classList.remove('focus-mode');
+        if (elements.mainContainer) elements.mainContainer.classList.remove('Theater-mode');
         if (elements.header) elements.header.style.display = 'block';
         if (elements.contentGrid) {
             elements.contentGrid.style.gridTemplateColumns = '';
@@ -348,7 +348,7 @@ function updateFocusMode() {
             elements.focusIndicator.style.display = 'none';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eyeOff;
-        if (elements.focusText) elements.focusText.textContent = 'Focus Mode OFF';
+        if (elements.focusText) elements.focusText.textContent = 'Theater Mode OFF';
         if (elements.focusToggle) {
             elements.focusToggle.className = elements.focusToggle.className.replace('from-cyan-500 to-blue-500', 'from-slate-700 to-slate-600');
         }
