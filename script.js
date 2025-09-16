@@ -10,7 +10,9 @@ const courseConfig = {
 let appState = {
     currentLesson: 1,
     completedLessons: new Set(),
-    focusMode: false
+    focusMode: false,
+    watchedTime: {}, // Store watched time per lesson
+    lastUpdateTime: Date.now()
 };
 
 // DOM elements
@@ -34,6 +36,8 @@ function initializeDOMElements() {
         lessonNumber: document.getElementById('lessonNumber'),
         lessonTitle: document.getElementById('lessonTitle'),
         completedInfo: document.getElementById('completedInfo'),
+        watchedTimeInfo: document.getElementById('watchedTimeInfo'),
+        totalTimeInfo: document.getElementById('totalTimeInfo'),
         lessonProgressBar: document.getElementById('lessonProgressBar'),
         progressCircle: document.getElementById('progressCircle'),
         progressPercentage: document.getElementById('progressPercentage'),
@@ -44,6 +48,7 @@ function initializeDOMElements() {
         focusIndicator: document.getElementById('focusIndicator'),
         prevBtn: document.getElementById('prevBtn'),
         nextBtn: document.getElementById('nextBtn'),
+        completeBtn: document.getElementById('completeBtn'),
         goToBtn: document.getElementById('goToBtn'),
         resetBtn: document.getElementById('resetBtn'),
         mainContainer: document.getElementById('mainContainer'),
@@ -82,36 +87,40 @@ function convertToBengaliNumber(number) {
     return number.toString().split('').map(digit => bengaliDigits[parseInt(digit)]).join('');
 }
 
-// Storage functions using in-memory storage
-let storageData = {
-    courseProgress: null,
-    milestones: {}
-};
-
+// Storage functions using localStorage
 function saveToStorage(key, data) {
     try {
-        storageData[key] = data;
-        console.log(`Saved ${key}:`, data);
+        localStorage.setItem(key, JSON.stringify(data));
+        console.log(`Saved ${key} to localStorage:`, data);
     } catch (error) {
-        console.error('Failed to save data:', error);
+        console.error('Failed to save data to localStorage:', error);
     }
 }
 
 function loadFromStorage(key) {
     try {
-        return storageData[key] || null;
+        const data = localStorage.getItem(key);
+        if (data) {
+            return JSON.parse(data);
+        }
+        return null;
     } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error('Failed to load data from localStorage:', error);
         return null;
     }
 }
+
+// In-memory fallback for milestones (since they're temporary)
+let milestoneData = {};
 
 // Progress functions
 function saveProgressData() {
     const progressData = {
         currentLesson: appState.currentLesson,
         completed: Array.from(appState.completedLessons),
-        focusMode: appState.focusMode
+        focusMode: appState.focusMode,
+        watchedTime: appState.watchedTime,
+        lastSaved: Date.now()
     };
     saveToStorage('courseProgress', progressData);
 }
@@ -123,7 +132,46 @@ function loadProgressData() {
         appState.currentLesson = savedProgress.currentLesson || 1;
         appState.completedLessons = new Set(savedProgress.completed || []);
         appState.focusMode = savedProgress.focusMode || false;
+        appState.watchedTime = savedProgress.watchedTime || {};
+        console.log('Loaded progress from localStorage:', savedProgress);
+    } else {
+        console.log('No saved progress found, starting fresh');
     }
+}
+
+function updateWatchedTime() {
+    const currentTime = Date.now();
+    const timeDiff = Math.floor((currentTime - appState.lastUpdateTime) / 1000); // seconds
+    
+    // Only count time if the difference is reasonable (between 1-10 seconds)
+    // This prevents counting time when tab was inactive
+    if (timeDiff >= 1 && timeDiff <= 10) {
+        const lessonKey = `lesson_${appState.currentLesson}`;
+        appState.watchedTime[lessonKey] = (appState.watchedTime[lessonKey] || 0) + timeDiff;
+        
+        // Auto-complete lesson if watched for more than 5 minutes (300 seconds)
+        if (appState.watchedTime[lessonKey] >= 300 && !appState.completedLessons.has(appState.currentLesson)) {
+            appState.completedLessons.add(appState.currentLesson);
+            console.log(`Auto-completed lesson ${appState.currentLesson} after 5 minutes of watch time`);
+            updateUI();
+            checkForMilestones();
+        }
+    }
+    
+    appState.lastUpdateTime = currentTime;
+    
+    // Save progress every 30 seconds
+    if (timeDiff > 0 && Date.now() % 30000 < 1000) {
+        saveProgressData();
+    }
+}
+
+function getTotalWatchedTime() {
+    return Object.values(appState.watchedTime).reduce((total, time) => total + time, 0);
+}
+
+function getWatchedTimeForLesson(lessonNumber) {
+    return appState.watchedTime[`lesson_${lessonNumber}`] || 0;
 }
 
 function calculateCompletionPercentage() {
@@ -134,9 +182,13 @@ function checkForMilestones() {
     const percentage = calculateCompletionPercentage();
     const milestones = [25, 50, 75, 100];
     
+    console.log('Checking milestones. Current percentage:', percentage);
+    
     milestones.forEach(milestone => {
-        if (percentage >= milestone && !storageData.milestones[`milestone_${milestone}`]) {
-            storageData.milestones[`milestone_${milestone}`] = true;
+        const milestoneKey = `milestone_${milestone}`;
+        if (percentage >= milestone && !milestoneData[milestoneKey]) {
+            milestoneData[milestoneKey] = true;
+            console.log('Milestone reached:', milestone + '%');
             showCelebration(milestone);
         }
     });
@@ -170,6 +222,7 @@ function goToLesson(lessonNumber) {
         updateVideoPlayer();
         updateUI();
         saveProgressData();
+        console.log('Navigated to lesson:', lessonNumber);
     }
 }
 
@@ -182,6 +235,7 @@ function nextLesson() {
         updateUI();
         saveProgressData();
         checkForMilestones();
+        console.log('Moved to next lesson:', appState.currentLesson, 'Completed lessons:', Array.from(appState.completedLessons));
     }
 }
 
@@ -191,6 +245,26 @@ function prevLesson() {
         updateVideoPlayer();
         updateUI();
         saveProgressData();
+        console.log('Moved to previous lesson:', appState.currentLesson);
+    }
+}
+
+function markLessonComplete() {
+    appState.completedLessons.add(appState.currentLesson);
+    updateUI();
+    saveProgressData();
+    checkForMilestones();
+    console.log('Marked lesson', appState.currentLesson, 'as complete. Total completed:', appState.completedLessons.size);
+    
+    // Show feedback
+    if (elements.completeBtn) {
+        const originalText = elements.completeBtn.textContent;
+        elements.completeBtn.textContent = '✓ Completed!';
+        elements.completeBtn.classList.add('bg-green-700');
+        setTimeout(() => {
+            elements.completeBtn.textContent = originalText;
+            elements.completeBtn.classList.remove('bg-green-700');
+        }, 1500);
     }
 }
 
@@ -242,20 +316,26 @@ function resetAll() {
     appState.currentLesson = 1;
     appState.completedLessons = new Set();
     appState.focusMode = false;
+    appState.watchedTime = {};
+    appState.lastUpdateTime = Date.now();
     
-    // Reset storage data
-    storageData = {
-        courseProgress: null,
-        milestones: {}
-    };
+    // Clear localStorage
+    localStorage.removeItem('courseProgress');
+    
+    // Reset milestone data
+    milestoneData = {};
     
     updateVideoPlayer();
     updateUI();
     updateFocusMode();
+    
+    console.log('Reset all progress and localStorage');
 }
 
 // UI update functions
 function updateUI() {
+    console.log('Updating UI with state:', appState);
+    
     if (elements.lessonInfo) {
         elements.lessonInfo.textContent = `Lesson ${appState.currentLesson} of ${courseConfig.totalLessons}`;
     }
@@ -263,9 +343,21 @@ function updateUI() {
         elements.completedInfo.textContent = `${appState.completedLessons.size} completed`;
     }
     
+    // Update watched time info
+    if (elements.watchedTimeInfo) {
+        const currentLessonTime = getWatchedTimeForLesson(appState.currentLesson);
+        elements.watchedTimeInfo.textContent = `${formatTime(currentLessonTime)} watched`;
+    }
+    
+    if (elements.totalTimeInfo) {
+        const totalTime = getTotalWatchedTime();
+        elements.totalTimeInfo.textContent = `Total: ${formatTime(totalTime)}`;
+    }
+    
     if (elements.lessonProgressBar) {
         const lessonProgress = (appState.currentLesson / courseConfig.totalLessons) * 100;
         elements.lessonProgressBar.style.width = `${lessonProgress}%`;
+        console.log('Lesson progress bar updated to:', lessonProgress + '%');
     }
     
     if (elements.progressCircle && elements.progressPercentage && elements.progressText) {
@@ -275,6 +367,7 @@ function updateUI() {
         elements.progressCircle.style.strokeDashoffset = offset;
         elements.progressPercentage.textContent = `${Math.round(completionPercentage)}%`;
         elements.progressText.textContent = `${appState.completedLessons.size} of ${courseConfig.totalLessons} lessons completed`;
+        console.log('Progress circle updated:', completionPercentage + '%', 'Offset:', offset);
     }
     
     // Update button states
@@ -332,6 +425,13 @@ function setupEventListeners() {
         elements.nextBtn.addEventListener('click', (e) => {
             e.preventDefault();
             nextLesson();
+        });
+    }
+    
+    if (elements.completeBtn) {
+        elements.completeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            markLessonComplete();
         });
     }
     
@@ -488,7 +588,7 @@ function init() {
     if (elements.courseTitle) elements.courseTitle.textContent = courseConfig.courseTitle;
     if (elements.courseDescription) elements.courseDescription.textContent = courseConfig.courseDescription;
     
-    // Load saved progress
+    // Load saved progress from localStorage
     loadProgressData();
     
     // Update UI
@@ -498,6 +598,12 @@ function init() {
     
     // Setup event listeners
     setupEventListeners();
+    
+    // Start the watch time tracking interval
+    setInterval(() => {
+        updateWatchedTime();
+        updateUI(); // Update UI to show current watched time
+    }, 1000); // Update every second
     
     console.log("Course Tracker initialized successfully");
     console.log("Current state:", appState);
