@@ -1,7 +1,7 @@
 // Course Configuration - Easy to customize
 const courseConfig = {
     playlistId: "PLKX6RwLbgFxJnQXsUj2ZA5-_FGFQp9tOE", // Your YouTube Course Playlist
-    totalLessons: 27,
+    totalLessons: 33,
     courseTitle: "Complete Course Series", 
     courseDescription: "Master new skills with this comprehensive video course series. Track your progress and earn badges as you learn!"
 };
@@ -28,55 +28,57 @@ let appState = {
     earnedTimeBadges: new Set()
 };
 
-// DOM elements
-const elements = {
-    videoPlayer: document.getElementById('videoPlayer'),
-    videoFrame: document.getElementById('videoFrame'),
-    courseTitle: document.getElementById('courseTitle'),
-    courseDescription: document.getElementById('courseDescription'),
-    lessonInfo: document.getElementById('lessonInfo'),
-    lessonNumber: document.getElementById('lessonNumber'),
-    lessonTitle: document.getElementById('lessonTitle'),
-    completedInfo: document.getElementById('completedInfo'),
-    lessonProgressBar: document.getElementById('lessonProgressBar'),
-    totalTime: document.getElementById('totalTime'),
-    sessionTime: document.getElementById('sessionTime'),
-    progressCircle: document.getElementById('progressCircle'),
-    progressPercentage: document.getElementById('progressPercentage'),
-    progressText: document.getElementById('progressText'),
-    focusToggle: document.getElementById('focusToggle'),
-    focusIcon: document.getElementById('focusIcon'),
-    focusText: document.getElementById('focusText'),
-    focusIndicator: document.getElementById('focusIndicator'),
-    prevBtn: document.getElementById('prevBtn'),
-    nextBtn: document.getElementById('nextBtn'),
-    goToBtn: document.getElementById('goToBtn'),
-    resetBtn: document.getElementById('resetBtn'),
-    timeBadges: document.getElementById('timeBadges'),
-    mainContainer: document.getElementById('mainContainer'),
-    header: document.getElementById('header'),
-    contentGrid: document.getElementById('contentGrid'),
-    videoContainer: document.getElementById('videoContainer'),
-    trackingStatus: document.getElementById('trackingStatus'),
-    
-    // Modals
-    goToModal: document.getElementById('goToModal'),
-    goToInput: document.getElementById('goToInput'),
-    goToCancelBtn: document.getElementById('goToCancelBtn'),
-    goToConfirmBtn: document.getElementById('goToConfirmBtn'),
-    resetModal: document.getElementById('resetModal'),
-    resetCancelBtn: document.getElementById('resetCancelBtn'),
-    resetConfirmBtn: document.getElementById('resetConfirmBtn'),
-    celebrationModal: document.getElementById('celebrationModal'),
-    celebrationIcon: document.getElementById('celebrationIcon'),
-    celebrationTitle: document.getElementById('celebrationTitle'),
-    celebrationMessage: document.getElementById('celebrationMessage'),
-    timeBadgeModal: document.getElementById('timeBadgeModal'),
-    timeBadgeContent: document.getElementById('timeBadgeContent'),
-    timeBadgeIcon: document.getElementById('timeBadgeIcon'),
-    timeBadgeName: document.getElementById('timeBadgeName'),
-    timeBadgeHours: document.getElementById('timeBadgeHours')
-};
+// DOM elements cache function
+function getElements() {
+    return {
+        videoPlayer: document.getElementById('videoPlayer'),
+        videoFrame: document.getElementById('videoFrame'),
+        courseTitle: document.getElementById('courseTitle'),
+        courseDescription: document.getElementById('courseDescription'),
+        lessonInfo: document.getElementById('lessonInfo'),
+        lessonNumber: document.getElementById('lessonNumber'),
+        lessonTitle: document.getElementById('lessonTitle'),
+        completedInfo: document.getElementById('completedInfo'),
+        lessonProgressBar: document.getElementById('lessonProgressBar'),
+        totalTime: document.getElementById('totalTime'),
+        sessionTime: document.getElementById('sessionTime'),
+        progressCircle: document.getElementById('progressCircle'),
+        progressPercentage: document.getElementById('progressPercentage'),
+        progressText: document.getElementById('progressText'),
+        focusToggle: document.getElementById('focusToggle'),
+        focusIcon: document.getElementById('focusIcon'),
+        focusText: document.getElementById('focusText'),
+        focusIndicator: document.getElementById('focusIndicator'),
+        prevBtn: document.getElementById('prevBtn'),
+        nextBtn: document.getElementById('nextBtn'),
+        goToBtn: document.getElementById('goToBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        timeBadges: document.getElementById('timeBadges'),
+        mainContainer: document.getElementById('mainContainer'),
+        header: document.getElementById('header'),
+        contentGrid: document.getElementById('contentGrid'),
+        videoContainer: document.getElementById('videoContainer'),
+        trackingStatus: document.getElementById('trackingStatus'),
+        
+        // Modals
+        goToModal: document.getElementById('goToModal'),
+        goToInput: document.getElementById('goToInput'),
+        goToCancelBtn: document.getElementById('goToCancelBtn'),
+        goToConfirmBtn: document.getElementById('goToConfirmBtn'),
+        resetModal: document.getElementById('resetModal'),
+        resetCancelBtn: document.getElementById('resetCancelBtn'),
+        resetConfirmBtn: document.getElementById('resetConfirmBtn'),
+        celebrationModal: document.getElementById('celebrationModal'),
+        celebrationIcon: document.getElementById('celebrationIcon'),
+        celebrationTitle: document.getElementById('celebrationTitle'),
+        celebrationMessage: document.getElementById('celebrationMessage'),
+        timeBadgeModal: document.getElementById('timeBadgeModal'),
+        timeBadgeContent: document.getElementById('timeBadgeContent'),
+        timeBadgeIcon: document.getElementById('timeBadgeIcon'),
+        timeBadgeName: document.getElementById('timeBadgeName'),
+        timeBadgeHours: document.getElementById('timeBadgeHours')
+    };
+}
 
 // SVG Icons
 const icons = {
@@ -84,9 +86,9 @@ const icons = {
     timer: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
     zap: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>',
     medal: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>',
-    award: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 713.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>',
+    award: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"></path>',
     crown: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"></path>',
-    trophy: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>',
+    trophy: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 714.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 713.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"></path>',
     eyeOff: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>',
     eye: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>',
     star: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>'
@@ -110,18 +112,26 @@ function convertToBengaliNumber(number) {
     return number.toString().split('').map(digit => bengaliDigits[parseInt(digit)]).join('');
 }
 
-function saveToLocalStorage(key, data) {
+// Local storage wrapper functions (browser-safe)
+function saveToStorage(key, data) {
     try {
-        localStorage.setItem(key, JSON.stringify(data));
+        if (typeof Storage !== "undefined") {
+            localStorage.setItem(key, JSON.stringify(data));
+        } else {
+            console.warn('localStorage not supported');
+        }
     } catch (error) {
         console.error('Failed to save to localStorage:', error);
     }
 }
 
-function loadFromLocalStorage(key) {
+function loadFromStorage(key) {
     try {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
+        if (typeof Storage !== "undefined") {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        }
+        return null;
     } catch (error) {
         console.error('Failed to load from localStorage:', error);
         return null;
@@ -157,7 +167,9 @@ function getCurrentSessionTime() {
 }
 
 function updateTimeDisplay() {
+    const elements = getElements();
     const sessionTime = getCurrentSessionTime();
+    
     if (elements.totalTime) {
         elements.totalTime.textContent = formatTime(appState.totalWatchTime + sessionTime);
     }
@@ -167,6 +179,8 @@ function updateTimeDisplay() {
 }
 
 function updateTrackingStatus(isTracking) {
+    const elements = getElements();
+    
     if (elements.trackingStatus) {
         if (isTracking) {
             elements.trackingStatus.innerHTML = `
@@ -183,13 +197,13 @@ function updateTrackingStatus(isTracking) {
 }
 
 function saveTimeData() {
-    saveToLocalStorage('totalWatchTime', appState.totalWatchTime);
-    saveToLocalStorage('earnedTimeBadges', Array.from(appState.earnedTimeBadges));
+    saveToStorage('totalWatchTime', appState.totalWatchTime);
+    saveToStorage('earnedTimeBadges', Array.from(appState.earnedTimeBadges));
 }
 
 function loadTimeData() {
-    const savedTime = loadFromLocalStorage('totalWatchTime');
-    const savedBadges = loadFromLocalStorage('earnedTimeBadges');
+    const savedTime = loadFromStorage('totalWatchTime');
+    const savedBadges = loadFromStorage('earnedTimeBadges');
     
     if (savedTime !== null) {
         appState.totalWatchTime = savedTime;
@@ -219,11 +233,11 @@ function saveProgressData() {
         completed: Array.from(appState.completedLessons),
         focusMode: appState.focusMode
     };
-    saveToLocalStorage('courseProgress', progressData);
+    saveToStorage('courseProgress', progressData);
 }
 
 function loadProgressData() {
-    const savedProgress = loadFromLocalStorage('courseProgress');
+    const savedProgress = loadFromStorage('courseProgress');
     
     if (savedProgress) {
         appState.currentLesson = savedProgress.currentLesson || 1;
@@ -241,8 +255,8 @@ function checkForMilestones() {
     const milestones = [25, 50, 75, 100];
     
     milestones.forEach(milestone => {
-        if (percentage >= milestone && !localStorage.getItem(`milestone_${milestone}`)) {
-            localStorage.setItem(`milestone_${milestone}`, 'true');
+        if (percentage >= milestone && !loadFromStorage(`milestone_${milestone}`)) {
+            saveToStorage(`milestone_${milestone}`, 'true');
             showCelebration(milestone);
         }
     });
@@ -250,6 +264,7 @@ function checkForMilestones() {
 
 // Video functions
 function updateVideoPlayer() {
+    const elements = getElements();
     const lessonNumber = appState.currentLesson;
     const bengaliNumber = convertToBengaliNumber(lessonNumber);
     const totalBengali = convertToBengaliNumber(courseConfig.totalLessons);
@@ -316,8 +331,10 @@ function toggleFocusMode() {
 }
 
 function updateFocusMode() {
+    const elements = getElements();
+    
     if (appState.focusMode) {
-        if (elements.mainContainer) elements.mainContainer.classList.add('Theater-mode');
+        if (elements.mainContainer) elements.mainContainer.classList.add('focus-mode');
         if (elements.header) elements.header.style.display = 'none';
         if (elements.contentGrid) {
             elements.contentGrid.style.gridTemplateColumns = '1fr';
@@ -330,12 +347,12 @@ function updateFocusMode() {
             elements.focusIndicator.style.display = 'flex';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eye;
-        if (elements.focusText) elements.focusText.textContent = 'Theater Mode ON';
+        if (elements.focusText) elements.focusText.textContent = 'Focus Mode ON';
         if (elements.focusToggle) {
             elements.focusToggle.className = elements.focusToggle.className.replace('from-slate-700 to-slate-600', 'from-cyan-500 to-blue-500');
         }
     } else {
-        if (elements.mainContainer) elements.mainContainer.classList.remove('Theater-mode');
+        if (elements.mainContainer) elements.mainContainer.classList.remove('focus-mode');
         if (elements.header) elements.header.style.display = 'block';
         if (elements.contentGrid) {
             elements.contentGrid.style.gridTemplateColumns = '';
@@ -348,7 +365,7 @@ function updateFocusMode() {
             elements.focusIndicator.style.display = 'none';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eyeOff;
-        if (elements.focusText) elements.focusText.textContent = 'Theater Mode OFF';
+        if (elements.focusText) elements.focusText.textContent = 'Focus Mode OFF';
         if (elements.focusToggle) {
             elements.focusToggle.className = elements.focusToggle.className.replace('from-cyan-500 to-blue-500', 'from-slate-700 to-slate-600');
         }
@@ -367,7 +384,13 @@ function resetAll() {
     stopTimeTracking();
     
     // Clear localStorage
-    localStorage.clear();
+    try {
+        if (typeof Storage !== "undefined") {
+            localStorage.clear();
+        }
+    } catch (error) {
+        console.error('Failed to clear localStorage:', error);
+    }
     
     // Update UI
     updateVideoPlayer();
@@ -378,6 +401,8 @@ function resetAll() {
 
 // UI update functions
 function updateUI() {
+    const elements = getElements();
+    
     // Update lesson info
     if (elements.lessonInfo) {
         elements.lessonInfo.textContent = `Lesson ${appState.currentLesson} of ${courseConfig.totalLessons}`;
@@ -423,6 +448,7 @@ function updateUI() {
 }
 
 function updateTimeBadgesDisplay() {
+    const elements = getElements();
     if (!elements.timeBadges) return;
     
     elements.timeBadges.innerHTML = '';
@@ -457,6 +483,7 @@ function updateTimeBadgesDisplay() {
 
 // Celebration functions
 function showCelebration(milestone) {
+    const elements = getElements();
     if (!elements.celebrationModal) return;
     
     const messages = {
@@ -472,11 +499,14 @@ function showCelebration(milestone) {
     
     elements.celebrationModal.classList.remove('hidden');
     setTimeout(() => {
-        elements.celebrationModal.classList.add('hidden');
+        if (elements.celebrationModal) {
+            elements.celebrationModal.classList.add('hidden');
+        }
     }, 3000);
 }
 
 function showTimeBadgeCelebration(badge) {
+    const elements = getElements();
     if (!elements.timeBadgeModal) return;
     
     if (elements.timeBadgeContent) {
@@ -488,12 +518,16 @@ function showTimeBadgeCelebration(badge) {
     
     elements.timeBadgeModal.classList.remove('hidden');
     setTimeout(() => {
-        elements.timeBadgeModal.classList.add('hidden');
+        if (elements.timeBadgeModal) {
+            elements.timeBadgeModal.classList.add('hidden');
+        }
     }, 3000);
 }
 
 // Event listeners
 function setupEventListeners() {
+    const elements = getElements();
+    
     // Navigation buttons
     if (elements.prevBtn) elements.prevBtn.addEventListener('click', prevLesson);
     if (elements.nextBtn) elements.nextBtn.addEventListener('click', nextLesson);
@@ -630,6 +664,8 @@ function startTimeUpdateInterval() {
 // Initialize the application
 function init() {
     console.log("Initializing Course Tracker...");
+    
+    const elements = getElements();
     
     // Set course info
     if (elements.courseTitle) elements.courseTitle.textContent = courseConfig.courseTitle;
