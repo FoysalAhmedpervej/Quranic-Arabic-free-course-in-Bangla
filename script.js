@@ -82,9 +82,10 @@ function convertToBengaliNumber(number) {
     return number.toString().split('').map(digit => bengaliDigits[parseInt(digit)]).join('');
 }
 
-// Storage functions
+// Storage functions using in-memory storage
 let storageData = {
-    courseProgress: null
+    courseProgress: null,
+    milestones: {}
 };
 
 function saveToStorage(key, data) {
@@ -134,8 +135,8 @@ function checkForMilestones() {
     const milestones = [25, 50, 75, 100];
     
     milestones.forEach(milestone => {
-        if (percentage >= milestone && !storageData[`milestone_${milestone}`]) {
-            storageData[`milestone_${milestone}`] = true;
+        if (percentage >= milestone && !storageData.milestones[`milestone_${milestone}`]) {
+            storageData.milestones[`milestone_${milestone}`] = true;
             showCelebration(milestone);
         }
     });
@@ -155,14 +156,8 @@ function updateVideoPlayer() {
         elements.lessonTitle.textContent = `Lesson ${lessonNumber}`;
     }
     
-    if (elements.prevBtn) {
-        elements.prevBtn.disabled = appState.currentLesson === 1;
-    }
-    if (elements.nextBtn) {
-        elements.nextBtn.disabled = appState.currentLesson === courseConfig.totalLessons;
-    }
-    
     if (elements.videoFrame) {
+        // Fixed playlist index calculation - YouTube playlist index starts from 1
         const playlistIndex = courseConfig.totalLessons - lessonNumber + 1;
         elements.videoFrame.src = `https://www.youtube.com/embed?list=${courseConfig.playlistId}&index=${playlistIndex}`;
     }
@@ -180,6 +175,7 @@ function goToLesson(lessonNumber) {
 
 function nextLesson() {
     if (appState.currentLesson < courseConfig.totalLessons) {
+        // Mark current lesson as completed before moving to next
         appState.completedLessons.add(appState.currentLesson);
         appState.currentLesson++;
         updateVideoPlayer();
@@ -216,7 +212,6 @@ function updateFocusMode() {
         if (elements.videoContainer) elements.videoContainer.classList.add('focus-ring');
         if (elements.focusIndicator) {
             elements.focusIndicator.classList.remove('hidden');
-            elements.focusIndicator.style.display = 'flex';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eye;
         if (elements.focusText) elements.focusText.textContent = 'Theater Mode ON';
@@ -234,7 +229,6 @@ function updateFocusMode() {
         if (elements.videoContainer) elements.videoContainer.classList.remove('focus-ring');
         if (elements.focusIndicator) {
             elements.focusIndicator.classList.add('hidden');
-            elements.focusIndicator.style.display = 'none';
         }
         if (elements.focusIcon) elements.focusIcon.innerHTML = icons.eyeOff;
         if (elements.focusText) elements.focusText.textContent = 'Theater Mode OFF';
@@ -249,8 +243,10 @@ function resetAll() {
     appState.completedLessons = new Set();
     appState.focusMode = false;
     
+    // Reset storage data
     storageData = {
-        courseProgress: null
+        courseProgress: null,
+        milestones: {}
     };
     
     updateVideoPlayer();
@@ -274,16 +270,18 @@ function updateUI() {
     
     if (elements.progressCircle && elements.progressPercentage && elements.progressText) {
         const completionPercentage = calculateCompletionPercentage();
-        const circumference = 2 * Math.PI * 55;
+        const circumference = 2 * Math.PI * 55; // 345.575
         const offset = circumference - (completionPercentage / 100) * circumference;
         elements.progressCircle.style.strokeDashoffset = offset;
         elements.progressPercentage.textContent = `${Math.round(completionPercentage)}%`;
         elements.progressText.textContent = `${appState.completedLessons.size} of ${courseConfig.totalLessons} lessons completed`;
     }
     
+    // Update button states
     if (elements.prevBtn) {
-        elements.prevBtn.disabled = appState.currentLesson === 1;
-        if (elements.prevBtn.disabled) {
+        const isDisabled = appState.currentLesson === 1;
+        elements.prevBtn.disabled = isDisabled;
+        if (isDisabled) {
             elements.prevBtn.classList.add('btn-disabled');
         } else {
             elements.prevBtn.classList.remove('btn-disabled');
@@ -291,8 +289,9 @@ function updateUI() {
     }
     
     if (elements.nextBtn) {
-        elements.nextBtn.disabled = appState.currentLesson === courseConfig.totalLessons;
-        if (elements.nextBtn.disabled) {
+        const isDisabled = appState.currentLesson === courseConfig.totalLessons;
+        elements.nextBtn.disabled = isDisabled;
+        if (isDisabled) {
             elements.nextBtn.classList.add('btn-disabled');
         } else {
             elements.nextBtn.classList.remove('btn-disabled');
@@ -311,7 +310,6 @@ function showCelebration(milestone) {
         100: "Congratulations! Course completed!"
     };
     
-    if (elements.celebrationIcon) elements.celebrationIcon.innerHTML = icons.star;
     if (elements.celebrationTitle) elements.celebrationTitle.textContent = messages[milestone] || `${milestone}% complete!`;
     if (elements.celebrationMessage) elements.celebrationMessage.textContent = "Keep up the great work!";
     
@@ -323,37 +321,60 @@ function showCelebration(milestone) {
 
 // Event listeners
 function setupEventListeners() {
-    if (elements.prevBtn) elements.prevBtn.addEventListener('click', prevLesson);
-    if (elements.nextBtn) elements.nextBtn.addEventListener('click', nextLesson);
-    if (elements.focusToggle) elements.focusToggle.addEventListener('click', toggleFocusMode);
+    if (elements.prevBtn) {
+        elements.prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            prevLesson();
+        });
+    }
+    
+    if (elements.nextBtn) {
+        elements.nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            nextLesson();
+        });
+    }
+    
+    if (elements.focusToggle) {
+        elements.focusToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleFocusMode();
+        });
+    }
     
     if (elements.goToBtn && elements.goToModal && elements.goToInput) {
-        elements.goToBtn.addEventListener('click', () => {
+        elements.goToBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             elements.goToModal.classList.remove('hidden');
             elements.goToInput.focus();
         });
     }
     
     if (elements.resetBtn && elements.resetModal) {
-        elements.resetBtn.addEventListener('click', () => {
+        elements.resetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             elements.resetModal.classList.remove('hidden');
         });
     }
     
-    if (elements.goToCancelBtn && elements.goToModal && elements.goToInput) {
-        elements.goToCancelBtn.addEventListener('click', () => {
+    if (elements.goToCancelBtn && elements.goToModal) {
+        elements.goToCancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             elements.goToModal.classList.add('hidden');
-            elements.goToInput.value = '';
+            if (elements.goToInput) elements.goToInput.value = '';
         });
     }
     
     if (elements.goToConfirmBtn && elements.goToInput && elements.goToModal) {
-        elements.goToConfirmBtn.addEventListener('click', () => {
+        elements.goToConfirmBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             const lessonNum = parseInt(elements.goToInput.value);
             if (lessonNum && lessonNum >= 1 && lessonNum <= courseConfig.totalLessons) {
                 goToLesson(lessonNum);
                 elements.goToModal.classList.add('hidden');
                 elements.goToInput.value = '';
+            } else {
+                alert(`Please enter a valid lesson number between 1 and ${courseConfig.totalLessons}`);
             }
         });
     }
@@ -361,43 +382,72 @@ function setupEventListeners() {
     if (elements.goToInput && elements.goToConfirmBtn) {
         elements.goToInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
                 elements.goToConfirmBtn.click();
             }
         });
     }
     
     if (elements.resetCancelBtn && elements.resetModal) {
-        elements.resetCancelBtn.addEventListener('click', () => {
+        elements.resetCancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             elements.resetModal.classList.add('hidden');
         });
     }
     
     if (elements.resetConfirmBtn && elements.resetModal) {
-        elements.resetConfirmBtn.addEventListener('click', () => {
+        elements.resetConfirmBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             resetAll();
             elements.resetModal.classList.add('hidden');
         });
     }
     
+    // Modal background click to close
+    if (elements.goToModal) {
+        elements.goToModal.addEventListener('click', (e) => {
+            if (e.target === elements.goToModal) {
+                elements.goToModal.classList.add('hidden');
+                if (elements.goToInput) elements.goToInput.value = '';
+            }
+        });
+    }
+    
+    if (elements.resetModal) {
+        elements.resetModal.addEventListener('click', (e) => {
+            if (e.target === elements.resetModal) {
+                elements.resetModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    if (elements.celebrationModal) {
+        elements.celebrationModal.addEventListener('click', (e) => {
+            if (e.target === elements.celebrationModal) {
+                elements.celebrationModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') return;
+        // Don't trigger shortcuts when typing in input fields
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         
-        switch (e.key) {
-            case 'ArrowLeft':
+        switch (e.key.toLowerCase()) {
+            case 'arrowleft':
                 e.preventDefault();
                 prevLesson();
                 break;
-            case 'ArrowRight':
+            case 'arrowright':
                 e.preventDefault();
                 nextLesson();
                 break;
             case 'f':
-            case 'F':
                 e.preventDefault();
                 toggleFocusMode();
                 break;
             case 'g':
-            case 'G':
                 if (elements.goToModal && elements.goToInput) {
                     e.preventDefault();
                     elements.goToModal.classList.remove('hidden');
@@ -405,10 +455,22 @@ function setupEventListeners() {
                 }
                 break;
             case 'r':
-            case 'R':
                 if ((e.ctrlKey || e.metaKey) && elements.resetModal) {
                     e.preventDefault();
                     elements.resetModal.classList.remove('hidden');
+                }
+                break;
+            case 'escape':
+                // Close any open modal
+                if (elements.goToModal && !elements.goToModal.classList.contains('hidden')) {
+                    elements.goToModal.classList.add('hidden');
+                    if (elements.goToInput) elements.goToInput.value = '';
+                }
+                if (elements.resetModal && !elements.resetModal.classList.contains('hidden')) {
+                    elements.resetModal.classList.add('hidden');
+                }
+                if (elements.celebrationModal && !elements.celebrationModal.classList.contains('hidden')) {
+                    elements.celebrationModal.classList.add('hidden');
                 }
                 break;
         }
@@ -419,22 +481,29 @@ function setupEventListeners() {
 function init() {
     console.log("Initializing Course Tracker...");
     
+    // Initialize DOM elements first
     initializeDOMElements();
     
+    // Set course information
     if (elements.courseTitle) elements.courseTitle.textContent = courseConfig.courseTitle;
     if (elements.courseDescription) elements.courseDescription.textContent = courseConfig.courseDescription;
     
+    // Load saved progress
     loadProgressData();
     
+    // Update UI
     updateVideoPlayer();
     updateUI();
     updateFocusMode();
     
+    // Setup event listeners
     setupEventListeners();
     
     console.log("Course Tracker initialized successfully");
+    console.log("Current state:", appState);
 }
 
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
