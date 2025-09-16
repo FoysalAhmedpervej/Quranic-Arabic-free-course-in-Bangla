@@ -150,12 +150,17 @@ function startTimeTracking() {
 function stopTimeTracking() {
     if (appState.isTracking && appState.sessionStartTime) {
         const sessionTime = Math.floor((Date.now() - appState.sessionStartTime) / 1000);
-        appState.totalWatchTime += sessionTime;
+        
+        // Only add to total watch time if session is more than 2 minutes (120 seconds)
+        if (sessionTime > 120) {
+            appState.totalWatchTime += sessionTime;
+            saveTimeData();
+            checkForTimeBadges();
+        }
+        
         appState.isTracking = false;
         appState.sessionStartTime = null;
-        saveTimeData();
         updateTrackingStatus(false);
-        checkForTimeBadges();
     }
 }
 
@@ -170,8 +175,11 @@ function updateTimeDisplay() {
     const elements = getElements();
     const sessionTime = getCurrentSessionTime();
     
+    // Show total time including current session only if session is > 2 minutes
+    const effectiveSessionTime = sessionTime > 120 ? sessionTime : 0;
+    
     if (elements.totalTime) {
-        elements.totalTime.textContent = formatTime(appState.totalWatchTime + sessionTime);
+        elements.totalTime.textContent = formatTime(appState.totalWatchTime + effectiveSessionTime);
     }
     if (elements.sessionTime) {
         elements.sessionTime.textContent = formatTime(sessionTime);
@@ -646,7 +654,8 @@ function startTimeUpdateInterval() {
         
         // Check for time badges every second
         if (appState.isTracking) {
-            const currentTotal = appState.totalWatchTime + getCurrentSessionTime();
+            const currentSessionTime = getCurrentSessionTime();
+            const currentTotal = appState.totalWatchTime + (currentSessionTime > 120 ? currentSessionTime : 0);
             const totalHours = currentTotal / 3600;
             
             timeBadges.forEach(badge => {
