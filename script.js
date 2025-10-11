@@ -1,7 +1,7 @@
 // Course Configuration - Easy to customize
 const courseConfig = {
     playlistId: "PLKX6RwLbgFxJnQXsUj2ZA5-_FGFQp9tOE", // Your YouTube Course Playlist
-    totalLessons: 33,
+    totalLessons: 36,
     courseTitle: "Complete Course Series", 
     courseDescription: "Master new skills with this comprehensive video course series. Track your progress and earn badges as you learn!"
 };
